@@ -33,7 +33,7 @@
 ;;; cider-common tests
 (describe "cider-abbreviate-ns"
   (it "handles nil input"
-    (expect (cider-abbreviate-ns nil) :to-equal nil))
+    (expect (cider-abbreviate-ns "something") :to-equal nil))
 
   (it "handles empty string input"
     (expect (cider-abbreviate-ns "") :to-equal ""))
