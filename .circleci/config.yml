@@ -17,12 +17,14 @@ commands:
             gci cert:\LocalMachine\Root\DAC9024F54D8F6DF94935FB1732638CA6AD77C13
             gci cert:\LocalMachine\Root\DAC9024F54D8F6DF94935FB1732638CA6AD77C13 | Remove-Item
             (iwr https://raw.githubusercontent.com/ikappaki/eldev/issue/circle-failure-win/webinstall/circle-eldev.ps1).Content | powershell -command -
-            eldev version
+
   test:
     steps:
       - run:
           name: Run regression tests
-          command: eldev -dtT -p test
+          command: |
+            eldev version
+            eldev -dtT -p test
 
 jobs:
   test-windows-emacs-latest:
