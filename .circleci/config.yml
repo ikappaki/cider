@@ -23,7 +23,7 @@ commands:
       - run:
           name: Run regression tests
           command: |
-            eldev prepare
+            eldev version
             eldev -dtT -p test
 
 jobs:
