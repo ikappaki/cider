@@ -107,7 +107,7 @@ JARFILE is the location of the archive."
     (cider-jar--archive-zip-summarize)))
 
 (defun cider-jar-contents-cached (jarfile)
-  "Like cider-jar-contents, but cached.
+  "Like `cider-jar-contents', but cached.
 
 Instead of returning a list of strings this returns a hash table of string
 keys and values `t`, for quick lookup.  JARFILE is the location of the
