@@ -13,6 +13,7 @@
 * Alternative Platforms
 ** xref:platforms/overview.adoc[Overview]
 ** xref:platforms/babashka.adoc[Babashka]
+** xref:platforms/nbb.adoc[Nbb]
 * Using CIDER
 ** xref:usage/interactive_programming.adoc[Interactive Programming]
 ** xref:usage/cider_mode.adoc[Using cider-mode]

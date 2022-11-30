@@ -4,6 +4,7 @@
 
 ### New features
 
+- [#3061](https://github.com/clojure-emacs/cider/issues/3061): Add support for nbb.
 - [#3249](https://github.com/clojure-emacs/cider/pull/3249): Add support for Clojure Spec 2.
 
 ### Changes
