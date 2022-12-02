@@ -72,6 +72,9 @@ being set that way"
 (describe "cider--make-result-overlay"
   :var (overlay-count this-command)
 
+  (after-each
+   (setq this-command))
+  
   (before-all
     (fset 'overlay-count (lambda ()
                            (save-excursion
