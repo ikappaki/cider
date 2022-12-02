@@ -73,7 +73,7 @@ being set that way"
   :var (overlay-count this-command)
 
   (after-each
-   (setq this-command))
+   (setq this-command nil))
   
   (before-all
     (fset 'overlay-count (lambda ()
