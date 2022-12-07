@@ -29,56 +29,18 @@
 (require 'cider)
 (require 'nrepl-dict)
 (require 'nrepl-tests-utils "test/utils/nrepl-tests-utils")
-
-;; https://emacs.stackexchange.com/a/55031
-(defmacro with-temp-dir (temp-dir &rest body)
-  "Create a temporary directory and bind it to TEMP-DIR while evaluating BODY.
-Remove the temp directory at the end of evaluation."
-  `(let ((,temp-dir (make-temp-file "" t)))
-    (unwind-protect
-      (progn
-        ,@body)
-      (condition-case err
-          (delete-directory ,temp-dir t)
-        (error
-         (message ":with-temp-dir-error :cannot-remove-temp-dir %S" err))))))
-
-(defun nrepl-client-cider-connected-hook-ref-add! ()
-  "Return a gv ref to signal when the client is connected to the nREPL server.
-This is done by adding a hook to `cider-connected-hook`.  Please remember to
-restore the hook to its original value after your test finishes.
-
-Use `gv-deref' (of which see) to deref the variable.
-
-The generalized variable can take the following values
-
-'!is-connected the client has not yet connected to the nREPL server.
-'is-connected  the client has connected to the nREPL server."
-  (let ((is-connected '!is-connected))
-    (add-hook 'cider-connected-hook
-              (lambda ()
-                (setq is-connected 'is-connected)))
-    (gv-ref is-connected)))
-
+(require 'integration-test-utils)
 
 (describe "jack in"
-  ;; See "babashka" case for commentary of the base template.
+  ;; See "babashka" case for commentary on the base template used by all other
+  ;; tests.
   ;;
   ;; It has been observed that some REPLs (Clojure cli, shadow) might take a
   ;; very long time to bring up/respond/shutdown, and thus sleep duration values
   ;; are set rather high.
 
-  ;; Restore global state after each test invocation.
-  ;;
-  ;; The convention here is that variables starting with `-' are used to store
-  ;; the original value of the global variable.
-  :var (-cider-connected-hook)
-  (before-each
-   (setq -cider-connected-hook cider-connected-hook))
-  (after-each
-   (setq cider-connected-hook -cider-connected-hook))
-
   (it "to babashka"
+    (with-cider-test-sandbox
       (with-temp-dir temp-dir
         ;; set up a project directory in temp
         (let* ((project-dir temp-dir)
@@ -90,19 +52,24 @@ The generalized variable can take the following values
             (setq-local default-directory project-dir)
 
             (unwind-protect
-                ;; jack in and get repl buffer
-                (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
+                (let* (;; Get a gv reference so as to poll if the client has
+                       ;; connected to the nREPL server.
+                       (client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
+
+                       ;; jack in and get repl buffer
                        (nrepl-proc (cider-jack-in-clj '()))
                        (nrepl-buf (process-buffer nrepl-proc)))
 
                   ;; wait until the client has successfully connected to the
                   ;; nREPL server.
-                  (nrepl-tests-sleep-until 5 (eq (gv-deref client-is-connected*)
-                                                  'is-connected))
-                  (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
+                  (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 5)
+                  ;; (nrepl-tests-sleep-until 5 (eq (gv-deref client-is-connected*)
+                  ;;                                'connected))
+                  ;; (expect (gv-deref client-is-connected*) :to-equal 'connected)
 
                   ;; give it some time to setup the clj REPL
-                  (nrepl-tests-sleep-until 5 (cider-repls 'clj nil))
+                  (cider-itu-poll-until (cider-repls 'clj nil) 5)
+                  ;;(nrepl-tests-sleep-until 5 (cider-repls 'clj nil))
 
                   ;; send command to the REPL, and stdout/stderr to
                   ;; corresponding eval- variables.
@@ -123,7 +90,8 @@ The generalized variable can take the following values
                          (when out (push out eval-out)))) )
 
                     ;; wait for the response to come back.
-                    (nrepl-tests-sleep-until 5 eval-out)
+                    (cider-itu-poll-until eval-out 5)
+                    ;;(nrepl-tests-sleep-until 5 eval-out)
 
                     ;; ensure there are no errors and response is as expected.
                     (expect eval-err :to-equal '())
@@ -133,15 +101,17 @@ The generalized variable can take the following values
                     (cider-quit repl-buffer)
 
                     ;; wait for the REPL to exit
-                    (nrepl-tests-sleep-until 5 (not (eq (process-status nrepl-proc) 'run)))
+                    (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 5)
+                    ;;(nrepl-tests-sleep-until 5 (not (eq (process-status nrepl-proc) 'run)))
                     (expect (member (process-status nrepl-proc) '(exit signal)))))
 
               ;; useful for debugging on errors
               (when-let ((nrepl-error-buffer (get-buffer "*nrepl-error*")))
                 (with-current-buffer nrepl-error-buffer
-                  (message ":*nrepl-error* %S" (substring-no-properties (buffer-string))))))))))
+                  (message ":*nrepl-error* %S" (substring-no-properties (buffer-string)))))))))))
 
   (it "to clojure tools cli"
+    (with-cider-test-sandbox
       (with-temp-dir temp-dir
         (let* ((project-dir temp-dir)
                (deps-edn (expand-file-name "deps.edn" project-dir)))
@@ -149,14 +119,16 @@ The generalized variable can take the following values
           (with-temp-buffer
             (setq-local default-directory project-dir)
             (unwind-protect
-                (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
+                (let* ((client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
                        (nrepl-proc (cider-jack-in-clj `()))
                        (nrepl-buf (process-buffer nrepl-proc)))
                   ;; high duration since on windows it takes a long time to startup
-                  (nrepl-tests-sleep-until 90 (eq (gv-deref client-is-connected*)
-                                                  'is-connected))
-                  (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
-                  (nrepl-tests-sleep-until 90 (cider-repls 'clj nil))
+                  (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 90)
+                  ;; (nrepl-tests-sleep-until 90 (eq (gv-deref client-is-connected*)
+                  ;;                                 'connected))
+                  ;; (expect (gv-deref client-is-connected*) :to-equal 'connected)
+                  (cider-itu-poll-until (cider-repls 'clj nil) 90)
+                  ;;(nrepl-tests-sleep-until 90 (cider-repls 'clj nil))
                   (let ((repl-buffer (cider-current-repl))
                         (eval-err '())
                         (eval-out '()))
@@ -169,17 +141,20 @@ The generalized variable can take the following values
                            (out err)
                          (when err (push err eval-err))
                          (when out (push out eval-out)))) )
-                    (nrepl-tests-sleep-until 10 eval-out)
+                    (cider-itu-poll-until eval-out 10)
+                    ;; (nrepl-tests-sleep-until 10 eval-out)
                     (expect eval-err :to-equal '())
                     (expect eval-out :to-equal '(":clojure? true"))
                     (cider-quit repl-buffer)
-                    (nrepl-tests-sleep-until 15 (not (eq (process-status nrepl-proc) 'run)))
+                    (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 15)
+                    ;;(nrepl-tests-sleep-until 15 (not (eq (process-status nrepl-proc) 'run)))
                     (expect (member (process-status nrepl-proc) '(exit signal)))))
               (when-let ((nrepl-error-buffer (get-buffer "*nrepl-error*")))
                 (with-current-buffer nrepl-error-buffer
-                  (message ":*nrepl-error* %S" (substring-no-properties (buffer-string))))))))))
+                  (message ":*nrepl-error* %S" (substring-no-properties (buffer-string)))))))))))
 
   (it "to leiningen"
+    (with-cider-test-sandbox
       (with-temp-dir temp-dir
         (let* ((project-dir temp-dir)
                (project-clj (expand-file-name "project.clj" project-dir)))
@@ -189,13 +164,15 @@ The generalized variable can take the following values
           (with-temp-buffer
             (setq-local default-directory project-dir)
             (unwind-protect
-                (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
+                (let* ((client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
                        (nrepl-proc (cider-jack-in-clj `()))
                        (nrepl-buf (process-buffer nrepl-proc)))
-                  (nrepl-tests-sleep-until 90 (eq (gv-deref client-is-connected*)
-                                                  'is-connected))
-                  (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
-                  (nrepl-tests-sleep-until 90 (cider-repls 'clj nil))
+                  (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 90)
+                  ;; (nrepl-tests-sleep-until 90 (eq (gv-deref client-is-connected*)
+                  ;;                                 'connected))
+                  ;; (expect (gv-deref client-is-connected*) :to-equal 'connected)
+                  (cider-itu-poll-until (cider-repls 'clj nil) 90)
+                  ;;(nrepl-tests-sleep-until 90 (cider-repls 'clj nil))
                   (let ((repl-buffer (cider-current-repl))
                         (eval-err '())
                         (eval-out '()))
@@ -208,69 +185,76 @@ The generalized variable can take the following values
                            (out err)
                          (when err (push err eval-err))
                          (when out (push out eval-out)))) )
-                    (nrepl-tests-sleep-until 10 eval-out)
+                    (cider-itu-poll-until eval-out 10)
+                    ;;(nrepl-tests-sleep-until 10 eval-out)
                     (expect eval-err :to-equal '())
                     (expect eval-out :to-equal '(":clojure? true"))
                     (cider-quit repl-buffer)
-                    (nrepl-tests-sleep-until 15 (not (eq (process-status nrepl-proc) 'run)))
+                    (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 15)
+                    ;;(nrepl-tests-sleep-until 15 (not (eq (process-status nrepl-proc) 'run)))
                     (expect (member (process-status nrepl-proc) '(exit signal)))
                     (sleep-for 0.5)))
               (when-let ((nrepl-error-buffer (get-buffer "*nrepl-error*")))
                 (with-current-buffer nrepl-error-buffer
                   (message ":*nrepl-error* %S"
-                           (substring-no-properties (buffer-string))))))))))
+                           (substring-no-properties (buffer-string)))))))))))
 
   (it "to shadow"
       ;; shadow asks user whether they want to open a browser, force to no
       (spy-on 'y-or-n-p)
 
-      (with-temp-dir temp-dir
-        (let* ((project-dir temp-dir)
-               (shadow-cljs-edn (expand-file-name "shadow-cljs.edn" project-dir))
-               (package-json    (expand-file-name "package.json"    project-dir)))
-          (write-region "{}" nil shadow-cljs-edn)
-          (write-region "{\"dependencies\":{\"shadow-cljs\": \"^2.20.13\"}}" nil package-json)
-          (let ((default-directory project-dir))
-            (message ":npm-install...")
-            (shell-command "npm install")
-            (message ":npm-install :done"))
-          (let ((cider-preferred-build-tool 'shadow-cljs)
-                ;; request for a node repl, so that shadow forks one.
-                (cider-shadow-default-options ":node-repl"))
-            (with-temp-buffer
-              (setq-local default-directory project-dir)
-              (unwind-protect
-                  (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
-                         (nrepl-proc (cider-jack-in-cljs '(:cljs-repl-type shadow)))
-                         (nrepl-buf (process-buffer nrepl-proc)))
-                    (nrepl-tests-sleep-until 120 (eq (gv-deref client-is-connected*)
-                                                    'is-connected))
-                    (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
-                    (nrepl-tests-sleep-until 120 (cider-repls 'cljs nil))
-                    (expect (cider-repls 'cljs nil) :not :to-be nil)
-                    (let ((repl-buffer (cider-current-repl))
-                          (eval-err '())
-                          (eval-out '()))
-                      (expect repl-buffer :not :to-be nil)
-                      (sleep-for 2)
-                      (cider-interactive-eval
-                       "(print :cljs? (some? *clojurescript-version*))"
-                       (lambda (return)
-                         (nrepl-dbind-response
-                             return
-                             (out err)
-                           (when err (push err eval-err))
-                           (when out (push out eval-out)))) )
-                      (nrepl-tests-sleep-until 10 eval-out)
-                      (expect eval-err :to-equal '())
-                      (expect eval-out :to-equal '(":cljs? true\n"))
-                      (cider-quit repl-buffer)
-                      (nrepl-tests-sleep-until 15 (not (eq (process-status nrepl-proc) 'run)))
-                      (expect (member (process-status nrepl-proc) '(exit signal)))))
-                (when-let ((nrepl-error-buffer (get-buffer "*nrepl-error*")))
-                  (with-current-buffer nrepl-error-buffer
-                    (message ":*nrepl-error* %S"
-                             (substring-no-properties (buffer-string))))))))))))
+      (with-cider-test-sandbox
+          (with-temp-dir temp-dir
+            (let* ((project-dir temp-dir)
+                   (shadow-cljs-edn (expand-file-name "shadow-cljs.edn" project-dir))
+                   (package-json    (expand-file-name "package.json"    project-dir)))
+              (write-region "{}" nil shadow-cljs-edn)
+              (write-region "{\"dependencies\":{\"shadow-cljs\": \"^2.20.13\"}}" nil package-json)
+              (let ((default-directory project-dir))
+                (message ":npm-install...")
+                (shell-command "npm install")
+                (message ":npm-install :done"))
+              (let ((cider-preferred-build-tool 'shadow-cljs)
+                    ;; request for a node repl, so that shadow forks one.
+                    (cider-shadow-default-options ":node-repl"))
+                (with-temp-buffer
+                  (setq-local default-directory project-dir)
+                  (unwind-protect
+                      (let* ((client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
+                             (nrepl-proc (cider-jack-in-cljs '(:cljs-repl-type shadow)))
+                             (nrepl-buf (process-buffer nrepl-proc)))
+                        (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 120)
+                        ;; (nrepl-tests-sleep-until 120 (eq (gv-deref client-is-connected*)
+                        ;;                                  'connected))
+                        ;; (expect (gv-deref client-is-connected*) :to-equal 'connected)
+                        (cider-itu-poll-until (cider-repls 'cljs nil) 120)
+                        ;; (nrepl-tests-sleep-until 120 (cider-repls 'cljs nil))
+                        ;; (expect (cider-repls 'cljs nil) :not :to-be nil)
+                        (let ((repl-buffer (cider-current-repl))
+                              (eval-err '())
+                              (eval-out '()))
+                          (expect repl-buffer :not :to-be nil)
+                          (sleep-for 2)
+                          (cider-interactive-eval
+                           "(print :cljs? (some? *clojurescript-version*))"
+                           (lambda (return)
+                             (nrepl-dbind-response
+                                 return
+                                 (out err)
+                               (when err (push err eval-err))
+                               (when out (push out eval-out)))) )
+                          (cider-itu-poll-until eval-out 10)
+                          ;; (nrepl-tests-sleep-until 10 eval-out)
+                          (expect eval-err :to-equal '())
+                          (expect eval-out :to-equal '(":cljs? true\n"))
+                          (cider-quit repl-buffer)
+                          (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 15)
+                          ;;(nrepl-tests-sleep-until 15 (not (eq (process-status nrepl-proc) 'run)))
+                          (expect (member (process-status nrepl-proc) '(exit signal)))))
+                    (when-let ((nrepl-error-buffer (get-buffer "*nrepl-error*")))
+                      (with-current-buffer nrepl-error-buffer
+                        (message ":*nrepl-error* %S"
+                                 (substring-no-properties (buffer-string)))))))))))))
 
 (provide 'integration-tests)
 
