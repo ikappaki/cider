@@ -43,25 +43,40 @@ Remove the temp directory at the end of evaluation."
         (error
          (message ":with-temp-dir-error :cannot-remove-temp-dir %S" err))))))
 
-(defun nrepl-client-connected?-ref-make! ()
-  "Return a reference to indicate when the client is connected to nREPL server.
-This is done by adding a hook to `cider-connected-hook` and is only active
-in the scope of the current buffer."
-  (let (connected?)
+(defun nrepl-client-cider-connected-hook-ref-add! ()
+  "Return a gv ref to signal when the client is connected to the nREPL server.
+This is done by adding a hook to `cider-connected-hook`.  Please remember to
+restore the hook to its original value after your test finishes.
+
+Use `gv-deref' (of which see) to deref the variable.
+
+The generalized variable can take the following values
+
+'!is-connected the client has not yet connected to the nREPL server.
+'is-connected  the client has connected to the nREPL server."
+  (let ((is-connected '!is-connected))
     (add-hook 'cider-connected-hook
               (lambda ()
-                (setq connected? t))
-              nil
-              ;; only set in the current buffer scope.
-              t)))
+                (setq is-connected 'is-connected)))
+    (gv-ref is-connected)))
 
 
 (describe "jack in"
-  ;; See "bb" case for basic commentary
+  ;; See "babashka" case for commentary of the base template.
   ;;
   ;; It has been observed that some REPLs (Clojure cli, shadow) might take a
   ;; very long time to bring up/respond/shutdown, and thus sleep duration values
   ;; are set rather high.
+
+  ;; Restore global state after each test invocation.
+  ;;
+  ;; The convention here is that variables starting with `-' are used to store
+  ;; the original value of the global variable.
+  :var (-cider-connected-hook)
+  (before-each
+   (setq -cider-connected-hook cider-connected-hook))
+  (after-each
+   (setq cider-connected-hook -cider-connected-hook))
 
   (it "to babashka"
       (with-temp-dir temp-dir
@@ -76,14 +91,15 @@ in the scope of the current buffer."
 
             (unwind-protect
                 ;; jack in and get repl buffer
-                (let* ((client-connected?* (nrepl-client-connected?-ref-make!))
+                (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
                        (nrepl-proc (cider-jack-in-clj '()))
                        (nrepl-buf (process-buffer nrepl-proc)))
 
                   ;; wait until the client has successfully connected to the
                   ;; nREPL server.
-                  (nrepl-tests-sleep-until 5 client-connected?*)
-                  (expect client-connected?*)
+                  (nrepl-tests-sleep-until 5 (eq (gv-deref client-is-connected*)
+                                                  'is-connected))
+                  (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
 
                   ;; give it some time to setup the clj REPL
                   (nrepl-tests-sleep-until 5 (cider-repls 'clj nil))
@@ -133,13 +149,13 @@ in the scope of the current buffer."
           (with-temp-buffer
             (setq-local default-directory project-dir)
             (unwind-protect
-                (let* ((client-connected?* (nrepl-client-connected?-ref-make!))
+                (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
                        (nrepl-proc (cider-jack-in-clj `()))
                        (nrepl-buf (process-buffer nrepl-proc)))
-                  (nrepl-tests-sleep-until 5 client-connected?*)
-                  (expect client-connected?*)
-
                   ;; high duration since on windows it takes a long time to startup
+                  (nrepl-tests-sleep-until 90 (eq (gv-deref client-is-connected*)
+                                                  'is-connected))
+                  (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
                   (nrepl-tests-sleep-until 90 (cider-repls 'clj nil))
                   (let ((repl-buffer (cider-current-repl))
                         (eval-err '())
@@ -173,11 +189,12 @@ in the scope of the current buffer."
           (with-temp-buffer
             (setq-local default-directory project-dir)
             (unwind-protect
-                (let* ((client-connected?* (nrepl-client-connected?-ref-make!))
+                (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
                        (nrepl-proc (cider-jack-in-clj `()))
                        (nrepl-buf (process-buffer nrepl-proc)))
-                  (nrepl-tests-sleep-until 5 client-connected?*)
-                  (expect client-connected?*)
+                  (nrepl-tests-sleep-until 90 (eq (gv-deref client-is-connected*)
+                                                  'is-connected))
+                  (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
                   (nrepl-tests-sleep-until 90 (cider-repls 'clj nil))
                   (let ((repl-buffer (cider-current-repl))
                         (eval-err '())
@@ -223,11 +240,12 @@ in the scope of the current buffer."
             (with-temp-buffer
               (setq-local default-directory project-dir)
               (unwind-protect
-                  (let* ((client-connected?* (nrepl-client-connected?-ref-make!))
+                  (let* ((client-is-connected* (nrepl-client-cider-connected-hook-ref-add!))
                          (nrepl-proc (cider-jack-in-cljs '(:cljs-repl-type shadow)))
                          (nrepl-buf (process-buffer nrepl-proc)))
-                    (nrepl-tests-sleep-until 5 client-connected?*)
-                    (expect client-connected?*)
+                    (nrepl-tests-sleep-until 120 (eq (gv-deref client-is-connected*)
+                                                    'is-connected))
+                    (expect (gv-deref client-is-connected*) :to-equal 'is-connected)
                     (nrepl-tests-sleep-until 120 (cider-repls 'cljs nil))
                     (expect (cider-repls 'cljs nil) :not :to-be nil)
                     (let ((repl-buffer (cider-current-repl))
