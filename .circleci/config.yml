@@ -114,10 +114,10 @@ workflows:
   version: 2
   ci-test-matrix:
     jobs:
-      - test-ubuntu-emacs-26
-      - test-ubuntu-emacs-27
-      - test-ubuntu-emacs-28
-      - test-ubuntu-emacs-master
-      - test-lint
-      - test-macos-emacs-latest
+      # - test-ubuntu-emacs-26
+      # - test-ubuntu-emacs-27
+      # - test-ubuntu-emacs-28
+      # - test-ubuntu-emacs-master
+      # - test-lint
+      # - test-macos-emacs-latest
       - test-windows-emacs-latest
