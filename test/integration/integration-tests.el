@@ -294,7 +294,9 @@
 
           (let ((cider-preferred-build-tool 'shadow-cljs)
                 ;; request for a node repl, so that shadow forks one.
-                (cider-shadow-default-options ":node-repl"))
+                (cider-shadow-default-options ":node-repl")
+                ;; Timeouts observed on CI macos runs, increase interval.
+                (nrepl-sync-request-timeout 20))
 
             (with-temp-buffer
               ;; set default directory to temp project
