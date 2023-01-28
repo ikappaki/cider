@@ -37,7 +37,7 @@
   ;; project to ensure it works, and finally exit the REPL.
 
   (it "to babashka"
-    (with-cider-test-sandbox
+    (with-cider-test-sandbox '(:sandbox-log t)
       (with-temp-dir temp-dir
         ;; Create a project in temp dir
         (let* ((project-dir temp-dir)
@@ -88,6 +88,10 @@
                 (expect eval-err :to-equal '())
                 (expect eval-out :to-equal '(":bb? true"))
 
+                ;; debug logging
+                (when sandbox-log
+                  (cider-itu-dump-all-buffers-contents ":DUMP-BUFFERS-BEFORE-EXIT---"))
+
                 ;; exit the REPL.
                 (cider-quit repl-buffer)
 
@@ -96,7 +100,7 @@
                 (expect (member (process-status nrepl-proc) '(exit signal))))))))))
 
   (it "to clojure tools cli"
-    (with-cider-test-sandbox
+    (with-cider-test-sandbox '(:sandbox-log t)
       (with-temp-dir temp-dir
         ;; Create a project in temp dir
         (let* ((project-dir temp-dir)
@@ -159,7 +163,15 @@
                       (expect eval-err :to-equal '())
                       (expect eval-out :to-equal '(":clojure? true"))
 
+                      ;; debug logging
+                      (when sandbox-log
+                        (cider-itu-dump-all-buffers-contents ":DUMP-BUFFERS-BEFORE-EXIT---"))
+
+                      ;; debug logging
+                      (when sandbox-log
+                        (cider-itu-dump-all-buffers-contents ":DUMP-BUFFERS-BEFORE-EXIT---"))
                       ;; exit the REPL.
+
                       (cider-quit repl-buffer)
                       ;; wait for the REPL to exit
                       (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 15)
@@ -178,7 +190,7 @@
                   (message ":!nrepl-mdlw-log-found")))))))))
 
   (it "to leiningen"
-    (with-cider-test-sandbox
+    (with-cider-test-sandbox '(:sandbox-log t)
       (with-temp-dir temp-dir
         ;; Create a project in temp dir
         (let* ((project-dir temp-dir)
@@ -231,6 +243,10 @@
                 (expect eval-err :to-equal '())
                 (expect eval-out :to-equal '(":clojure? true"))
 
+                ;; debug logging
+                (when sandbox-log
+                  (cider-itu-dump-all-buffers-contents ":DUMP-BUFFERS-BEFORE-EXIT---"))
+
                 ;; exit the REPL.
                 (cider-quit repl-buffer)
 
@@ -239,7 +255,7 @@
                 (expect (member (process-status nrepl-proc) '(exit signal))))))))))
 
   (it "to nbb"
-    (with-cider-test-sandbox
+    (with-cider-test-sandbox '(:sandbox-log t)
       (with-temp-dir temp-dir
         ;; Create a project in temp dir
         (let* ((project-dir temp-dir)
@@ -290,6 +306,10 @@
                 (expect eval-err :to-equal '())
                 (expect eval-out :to-equal '(":nbb? true"))
 
+                ;; debug logging
+                (when sandbox-log
+                  (cider-itu-dump-all-buffers-contents ":DUMP-BUFFERS-BEFORE-EXIT---"))
+
                 ;; exit the REPL.
                 (cider-quit repl-buffer)
 
@@ -301,7 +321,7 @@
     ;; shadow asks user whether they want to open a browser, force to no
     (spy-on 'y-or-n-p)
 
-    (with-cider-test-sandbox
+    (with-cider-test-sandbox '(:sandbox-log t)
       (with-temp-dir temp-dir
         ;; Create a project in temp dir
         (let* ((project-dir temp-dir)
@@ -376,6 +396,10 @@
                    ;; ensure there are no errors and response is as expected.
                    (expect eval-err :to-equal '())
                    (expect eval-out :to-equal '(":cljs? true\n"))
+
+                   ;; debug logging
+                   (when sandbox-log
+                     (cider-itu-dump-all-buffers-contents ":DUMP-BUFFERS-BEFORE-EXIT---"))
 
                    ;; exit the REPL.
                    (cider-quit repl-buffer)

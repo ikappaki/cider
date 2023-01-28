@@ -32,8 +32,8 @@
 (require 'cl-lib)
 (require 'seq)
 
-(defun cider-itu-dump-all-buffers-contents ()
-  "Print out the contents of all live buffers.
+(defun cider-itu-dump-all-buffers-contents (header)
+  "Print out the HEADER followed by the contents of all live buffers.
 
 It excludes some unrelated noisy buffers:
 
@@ -42,12 +42,13 @@ It excludes some unrelated noisy buffers:
                           ;; created when unpacking packages
                           (string-prefix-p " *tar-data" (buffer-name buf)))
                         (buffer-list))))
+    (message header)
     (dolist (buff filtered)
       (message "\n:BUFFER %S" (buffer-name buff))
       (with-current-buffer buff
         (message "%s\n" (buffer-substring-no-properties (point-min) (point-max)))))))
 
-(defmacro with-cider-test-sandbox (&rest body)
+(defmacro with-cider-test-sandbox (options &rest body)
   "Run BODY inside sandbox, with key cider global vars restored on exit.
 On error, it prints out all buffer contents including the nREPL messages
 buffer.
@@ -56,21 +57,22 @@ Only the following variables are currently restored, please add more as the
 test coverage increases:
 
 1. `cider-connected-hook`."
-  (declare (indent 0))
-  `(let (;; for dynamic vars, just use a binding under the same name, so that
-         ;; the global value is not modified.
-         (cider-connected-hook cider-connected-hook)
+  (declare (indent 1))
+  `(cl-destructuring-bind
+       (&key sandbox-log &allow-other-keys) ,options
+     (let (;; for dynamic vars, just use a binding under the same name, so that
+           ;; the global value is not modified.
+           (cider-connected-hook cider-connected-hook)
 
-         ;; Helpful for post morterm investigations.
-         (nrepl-log-messages t))
-     (condition-case err
-         (progn
-           ,@body)
-       (error
-        (message ":DUMPING-BUFFERS-CONTENTS-ON-ERROR---")
-        (cider-itu-dump-all-buffers-contents)
-        ;; rethrow error
-        (signal (car err) (cdr err))))))
+           ;; Helpful for post morterm investigations.
+           (nrepl-log-messages t))
+       (condition-case err
+           (progn
+             ,@body)
+         (error
+          (cider-itu-dump-all-buffers-contents ":DUMPING-BUFFERS-CONTENTS-ON-ERROR---")
+          ;; rethrow error
+          (signal (car err) (cdr err)))))))
 
 ;; https://emacs.stackexchange.com/a/55031
 (defmacro with-temp-dir (temp-dir &rest body)
@@ -125,13 +127,13 @@ The generalized variable can have the following values
 
   (it "that sand box can restore CIDER global vars."
     (let ((count (length cider-connected-hook)))
-      (with-cider-test-sandbox
+      (with-cider-test-sandbox '()
        (add-hook 'cider-connected-hook (lambda ()))
        (expect (length cider-connected-hook) :to-be (1+ count)))
       (expect (length cider-connected-hook) :to-be count)))
 
   (it "that `cider-itu-nrepl-client-connected-ref-make!' return ref changes value when client is connected."
-    (with-cider-test-sandbox
+    (with-cider-test-sandbox '()
       (let ((is-connected* (cider-itu-nrepl-client-connected-ref-make!)))
         (expect (gv-deref is-connected*) :to-equal '!connected)
         (run-hooks 'cider-connected-hook)
