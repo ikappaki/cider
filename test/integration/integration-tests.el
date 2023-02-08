@@ -470,19 +470,28 @@
       (with-temp-dir temp-dir
         ;; setup empty dir
         (let* ((project-dir temp-dir))
+
           ;; fake user input
-          ;; (advice-add 'y-or-n-p :before (lambda (&rest rest)
+          ;; (advice-add 'read-file-name :before (lambda (&rest rest)
           ;;                                        (error (format ":YN %S" rest))))
           ;; (advice-add 'completing-read :before (lambda (&rest rest)
           ;;                                        (error (format ":CR %S" rest))))
-          ;; (spy-on 'completing-read
-          ;;                                                :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
-          ;;                                                                               initial-input _hist _def _inherit-input-method)
-          ;;                                                                 (message ":PROMPOT %S" prompt)
-          ;;                                                                 (pcase prompt
-          ;;                                                                   ;; project src directory
-          ;;                                                                   ("Project: " initial-input)
-          ;;                                                                   (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
+          (spy-on 'read-file-name
+                  :and-call-fake (lambda (prompt &optional dir _default-filename _mustmatch
+                                                 _initial _predicate)
+                                   (message ":PROMPOT %S" prompt)
+                                   (pcase prompt
+                                     ;; project src directory
+                                     ("Project: " dir)
+                                     (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
+;; (spy-on 'completing-read
+;;                                                          :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
+;;                                                                                         initial-input _hist _def _inherit-input-method)
+;;                                                                           (message ":PROMPOT %S" prompt)
+;;                                                                           (pcase prompt
+;;                                                                             ;; project src directory
+;;                                                                             ("Project: " initial-input)
+;;                                                                             (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
           (with-temp-buffer
             ;; set default directory to temp project
             (setq-local default-directory project-dir)

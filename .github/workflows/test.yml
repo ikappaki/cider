@@ -61,8 +61,8 @@ jobs:
       # released
       uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307
       with:
-        bb: '1.0.165'
-        cli: '1.10.3.1013'
+        # bb: '1.0.165'
+        # cli: '1.10.3.1013'
         lein: '2.9.10'
 
     # - uses: actions/setup-node@v3
