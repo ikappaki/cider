@@ -65,11 +65,11 @@ jobs:
         cli: '1.10.3.1013'
         lein: '2.9.10'
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - run: npm install shadow-cljs@2.20.13 -g
-    - run: npm install nbb@1.1.152 -g
+    # - uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 16
+    # - run: npm install shadow-cljs@2.20.13 -g
+    # - run: npm install nbb@1.1.152 -g
 
     - name: Test integration
       run: |

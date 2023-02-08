@@ -36,64 +36,64 @@
   ;; jack-in to it, send an eval command to the REPL server specific to the
   ;; project to ensure it works, and finally exit the REPL.
 
-          ;; (it "to babashka"
-    ;; (with-cider-test-sandbox
-    ;;   (with-temp-dir temp-dir
-    ;;     ;; Create a project in temp dir
-    ;;     (let* ((project-dir temp-dir)
-    ;;            (bb-edn (expand-file-name "bb.edn" project-dir)))
-    ;;       (write-region "{}" nil bb-edn)
+  ;; (it "to babashka"
+  ;;   (with-cider-test-sandbox
+  ;;     (with-temp-dir temp-dir
+  ;;       ;; Create a project in temp dir
+  ;;       (let* ((project-dir temp-dir)
+  ;;              (bb-edn (expand-file-name "bb.edn" project-dir)))
+  ;;         (write-region "{}" nil bb-edn)
 
-    ;;       (with-temp-buffer
-    ;;         ;; set default directory to temp project
-    ;;         (setq-local default-directory project-dir)
+  ;;         (with-temp-buffer
+  ;;           ;; set default directory to temp project
+  ;;           (setq-local default-directory project-dir)
 
-    ;;         (let* (;; Get a gv reference so as to poll if the client has
-    ;;                ;; connected to the nREPL server.
-    ;;                (client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
+  ;;           (let* (;; Get a gv reference so as to poll if the client has
+  ;;                  ;; connected to the nREPL server.
+  ;;                  (client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
 
-    ;;                ;; jack in and get repl buffer
-    ;;                (nrepl-proc (cider-jack-in-clj '()))
-    ;;                (nrepl-buf (process-buffer nrepl-proc)))
+  ;;                  ;; jack in and get repl buffer
+  ;;                  (nrepl-proc (cider-jack-in-clj '()))
+  ;;                  (nrepl-buf (process-buffer nrepl-proc)))
 
-    ;;           ;; wait until the client has successfully connected to the
-    ;;           ;; nREPL server.
-    ;;           (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 5)
+  ;;             ;; wait until the client has successfully connected to the
+  ;;             ;; nREPL server.
+  ;;             (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 5)
 
-    ;;           ;; give it some time to setup the clj REPL
-    ;;           (cider-itu-poll-until (cider-repls 'clj nil) 5)
+  ;;             ;; give it some time to setup the clj REPL
+  ;;             (cider-itu-poll-until (cider-repls 'clj nil) 5)
 
-    ;;           ;; send command to the REPL, and push stdout/stderr to
-    ;;           ;; corresponding eval-xxx variables.
-    ;;           (let ((repl-buffer (cider-current-repl))
-    ;;                 (eval-err '())
-    ;;                 (eval-out '()))
-    ;;             (expect repl-buffer :not :to-be nil)
+  ;;             ;; send command to the REPL, and push stdout/stderr to
+  ;;             ;; corresponding eval-xxx variables.
+  ;;             (let ((repl-buffer (cider-current-repl))
+  ;;                   (eval-err '())
+  ;;                   (eval-out '()))
+  ;;               (expect repl-buffer :not :to-be nil)
 
-    ;;             ;; send command to the REPL
-    ;;             (cider-interactive-eval
-    ;;              ;; ask REPL to return a string that uniquely identifies it.
-    ;;              "(print :bb? (some? (System/getProperty \"babashka.version\")))"
-    ;;              (lambda (return)
-    ;;                (nrepl-dbind-response
-    ;;                    return
-    ;;                    (out err)
-    ;;                  (when err (push err eval-err))
-    ;;                  (when out (push out eval-out)))) )
+  ;;               ;; send command to the REPL
+  ;;               (cider-interactive-eval
+  ;;                ;; ask REPL to return a string that uniquely identifies it.
+  ;;                "(print :bb? (some? (System/getProperty \"babashka.version\")))"
+  ;;                (lambda (return)
+  ;;                  (nrepl-dbind-response
+  ;;                      return
+  ;;                      (out err)
+  ;;                    (when err (push err eval-err))
+  ;;                    (when out (push out eval-out)))) )
 
-    ;;             ;; wait for a response to come back.
-    ;;             (cider-itu-poll-until (or eval-err eval-out) 5)
+  ;;               ;; wait for a response to come back.
+  ;;               (cider-itu-poll-until (or eval-err eval-out) 5)
 
-    ;;             ;; ensure there are no errors and response is as expected.
-    ;;             (expect eval-err :to-equal '())
-    ;;             (expect eval-out :to-equal '(":bb? true"))
+  ;;               ;; ensure there are no errors and response is as expected.
+  ;;               (expect eval-err :to-equal '())
+  ;;               (expect eval-out :to-equal '(":bb? true"))
 
-    ;;             ;; exit the REPL.
-    ;;             (cider-quit repl-buffer)
+  ;;               ;; exit the REPL.
+  ;;               (cider-quit repl-buffer)
 
-    ;;             ;; wait for the REPL to exit
-    ;;             (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 5)
-    ;;             (expect (member (process-status nrepl-proc) '(exit signal))))))))))
+  ;;               ;; wait for the REPL to exit
+  ;;               (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 5)
+  ;;               (expect (member (process-status nrepl-proc) '(exit signal))))))))))
 
   ;; (it "to clojure tools cli"
   ;;   (with-cider-test-sandbox
@@ -397,73 +397,73 @@
 
   ;; jacking in without a current project
   ;;
-  (it "no project, user choice to nbb"
-    (with-cider-test-sandbox
-      (with-temp-dir temp-dir
-        ;; setup empty project dir
-        (let* ((project-dir temp-dir))
-          ;; fake user input
-          (spy-on 'completing-read
-                  :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
-                                                 initial-input _hist _def _inherit-input-method)
-                                   (pcase prompt
-                                     ;; select nbb
-                                     ("No project found in current dir, select project type to jack in: "
-                                      "nbb")
-                                     ;; project src directory, use suggested
-                                     ("Project: " initial-input)
-                                     (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
+  ;; (it "no project, user choice to nbb"
+  ;;   (with-cider-test-sandbox
+  ;;     (with-temp-dir temp-dir
+  ;;       ;; setup empty project dir
+  ;;       (let* ((project-dir temp-dir))
+  ;;         ;; fake user input
+  ;;         (spy-on 'completing-read
+  ;;                 :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
+  ;;                                                initial-input _hist _def _inherit-input-method)
+  ;;                                  (pcase prompt
+  ;;                                    ;; select nbb
+  ;;                                    ("No project found in current dir, select project type to jack in: "
+  ;;                                     "nbb")
+  ;;                                    ;; project src directory, use suggested
+  ;;                                    ("Project: " initial-input)
+  ;;                                    (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
 
-          (with-temp-buffer
-            ;; set default directory to temp project
-            (setq-local default-directory project-dir)
+  ;;         (with-temp-buffer
+  ;;           ;; set default directory to temp project
+  ;;           (setq-local default-directory project-dir)
 
-            (let* (;; Get a gv reference so as to poll if the client has
-                   ;; connected to the nREPL server.
-                   (client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
+  ;;           (let* (;; Get a gv reference so as to poll if the client has
+  ;;                  ;; connected to the nREPL server.
+  ;;                  (client-is-connected* (cider-itu-nrepl-client-connected-ref-make!))
 
-                   ;; jack in and get repl buffer
-                   (nrepl-proc (cider-jack-in-universal '()))
-                   (nrepl-buf (process-buffer nrepl-proc)))
+  ;;                  ;; jack in and get repl buffer
+  ;;                  (nrepl-proc (cider-jack-in-universal '()))
+  ;;                  (nrepl-buf (process-buffer nrepl-proc)))
 
-              ;; wait until the client has successfully connected to the
-              ;; nREPL server.
-              (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 5)
+  ;;             ;; wait until the client has successfully connected to the
+  ;;             ;; nREPL server.
+  ;;             (cider-itu-poll-until (eq (gv-deref client-is-connected*) 'connected) 5)
 
-              ;; give it some time to setup the clj REPL
-              (cider-itu-poll-until (cider-repls 'cljs nil) 5)
+  ;;             ;; give it some time to setup the clj REPL
+  ;;             (cider-itu-poll-until (cider-repls 'cljs nil) 5)
 
-              ;; send command to the REPL, and push stdout/stderr to
-              ;; corresponding eval-xxx variables.
-              (let ((repl-buffer (cider-current-repl))
-                    (eval-err '())
-                    (eval-out '()))
-                (expect repl-buffer :not :to-be nil)
+  ;;             ;; send command to the REPL, and push stdout/stderr to
+  ;;             ;; corresponding eval-xxx variables.
+  ;;             (let ((repl-buffer (cider-current-repl))
+  ;;                   (eval-err '())
+  ;;                   (eval-out '()))
+  ;;               (expect repl-buffer :not :to-be nil)
 
-                ;; send command to the REPL
-                (cider-interactive-eval
-                 ;; ask REPL to return a string that uniquely identifies it.
-                 "(print :nbb? (some? (nbb.core/version)))"
-                 (lambda (return)
-                   (nrepl-dbind-response
-                       return
-                       (out err)
-                     (when err (push err eval-err))
-                     (when out (push out eval-out)))) )
+  ;;               ;; send command to the REPL
+  ;;               (cider-interactive-eval
+  ;;                ;; ask REPL to return a string that uniquely identifies it.
+  ;;                "(print :nbb? (some? (nbb.core/version)))"
+  ;;                (lambda (return)
+  ;;                  (nrepl-dbind-response
+  ;;                      return
+  ;;                      (out err)
+  ;;                    (when err (push err eval-err))
+  ;;                    (when out (push out eval-out)))) )
 
-                ;; wait for a response to come back.
-                (cider-itu-poll-until (or eval-err eval-out) 5)
+  ;;               ;; wait for a response to come back.
+  ;;               (cider-itu-poll-until (or eval-err eval-out) 5)
 
-                ;; ensure there are no errors and response is as expected.
-                (expect eval-err :to-equal '())
-                (expect eval-out :to-equal '(":nbb? true"))
+  ;;               ;; ensure there are no errors and response is as expected.
+  ;;               (expect eval-err :to-equal '())
+  ;;               (expect eval-out :to-equal '(":nbb? true"))
 
-                ;; exit the REPL.
-                (cider-quit repl-buffer)
+  ;;               ;; exit the REPL.
+  ;;               (cider-quit repl-buffer)
 
-                ;; wait for the REPL to exit
-                (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 5)
-                (expect (member (process-status nrepl-proc) '(exit signal))))))))))
+  ;;               ;; wait for the REPL to exit
+  ;;               (cider-itu-poll-until (not (eq (process-status nrepl-proc) 'run)) 5)
+  ;;               (expect (member (process-status nrepl-proc) '(exit signal))))))))))
 
   (it "no project, numeric prefix argument, to leiningen"
     (with-cider-test-sandbox
@@ -474,6 +474,7 @@
           (spy-on 'completing-read
                   :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
                                                  initial-input _hist _def _inherit-input-method)
+                                   (message ":PROMPOT %S" prompt)
                                    (pcase prompt
                                      ;; project src directory
                                      ("Project: " initial-input)
