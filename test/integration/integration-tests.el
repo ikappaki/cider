@@ -471,8 +471,10 @@
         ;; setup empty dir
         (let* ((project-dir temp-dir))
           ;; fake user input
+          (advice-add 'y-or-n-p :before (lambda (&rest rest)
+                                                 (error (format ":YN %S" rest))))
           (advice-add 'completing-read :before (lambda (&rest rest)
-                                                 (throw 'error (format "%S" rest))))
+                                                 (error (format ":CR %S" rest))))
           ;; (spy-on 'completing-read
           ;;                                                :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
           ;;                                                                               initial-input _hist _def _inherit-input-method)
