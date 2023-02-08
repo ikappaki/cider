@@ -471,14 +471,16 @@
         ;; setup empty dir
         (let* ((project-dir temp-dir))
           ;; fake user input
-          (spy-on 'completing-read
-                  :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
-                                                 initial-input _hist _def _inherit-input-method)
-                                   (message ":PROMPOT %S" prompt)
-                                   (pcase prompt
-                                     ;; project src directory
-                                     ("Project: " initial-input)
-                                     (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
+          (advice-add 'completing-read :before (lambda (&rest rest)
+                                                 (throw 'error (format "%S" rest))))
+          ;; (spy-on 'completing-read
+          ;;                                                :and-call-fake (lambda (prompt _collection &optional _predicate _require-match
+          ;;                                                                               initial-input _hist _def _inherit-input-method)
+          ;;                                                                 (message ":PROMPOT %S" prompt)
+          ;;                                                                 (pcase prompt
+          ;;                                                                   ;; project src directory
+          ;;                                                                   ("Project: " initial-input)
+          ;;                                                                   (_ (error ":integration-test-unsupported-prompt-error %S" prompt)))))
           (with-temp-buffer
             ;; set default directory to temp project
             (setq-local default-directory project-dir)
