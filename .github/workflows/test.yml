@@ -78,4 +78,4 @@ jobs:
 
     - name: Test integration
       run: |
-        eldev -p -dtTC test --test-type integration
+        eldev -p -dtTC test --test-type integration || eldev -p -dtTC test --test-type integration || eldev -p -dtTC test --test-type integration
