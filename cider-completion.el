@@ -33,6 +33,7 @@
 (require 'cider-common)
 (require 'cider-doc)
 (require 'cider-eldoc)
+(require 'cider-util)
 (require 'nrepl-dict)
 
 (defcustom cider-completion-use-context t
@@ -152,7 +153,7 @@ form, with symbol at point replaced by __prefix__."
                           ;; Important because `beginning-of-defun' and
                           ;; `ending-of-defun' work incorrectly in the REPL
                           ;; buffer, so context extraction fails there.
-                          (derived-mode-p 'clojure-mode))
+                          (cider-clojure-major-mode-p))
                      ;; We use ignore-errors here since grabbing the context
                      ;; might fail because of unbalanced parens, or other
                      ;; technical reasons, yet we don't want to lose all

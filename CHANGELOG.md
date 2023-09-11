@@ -16,6 +16,7 @@
   * It will be progressively refined and documented, please consider this alpha software.
 - [#2958](https://github.com/clojure-emacs/cider/issues/2958), [#3279](https://github.com/clojure-emacs/cider/issues/3279): `cider-test-run-test`: support arbitrary deftest-like forms, defns with :test metadata, and search for a `-test` counterpart for a given defn (following `cider-test-infer-test-ns` logic).
   - This also makes obsolete the `cider-test-defining-forms` customization variable.
+- Basic support for using CIDER from [clojure-ts-mode](https://github.com/clojure-emacs/clojure-ts-mode) 
 
 ### Bugs fixed
 
