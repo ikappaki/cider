@@ -12,17 +12,23 @@
 (eldev-add-extra-dependencies 'runtime '(:package logview :optional t))
 (eldev-add-extra-dependencies 'runtime '(:package clojure-ts-mode :optional t))
 
+(defvar clojure-ts-failing-tests
+  (when (member system-type '(ms-dos windows-nt cygwin))
+    '("./test/cider-client-tests.el"
+      "./test/cider-eval-tests.el"))
+  "Tests that fail when running against clojure-ts-mode. These need to be fixed.
+See 'cider-expected-ns returns the namespace matching the given string path'
+and 'cider-provide-file can handle multibyte characters'
+test results from windows CI run.")
+
 (defvar cider-test-type 'main)
 (setf eldev-standard-excludes `(:or ,eldev-standard-excludes
                                     ;; Avoid including files in test "projects".
                                     (eldev-pcase-exhaustive cider-test-type
                                                             (`main            "./test/*/")
                                                             (`integration     '("./test/"   "!./test/integration"))
-                                                            (`clojure-ts-mode '("./test/*/" "!./test/clojure-ts-mode"
-                                                                                ;; 1 test in each of the below files fails
-                                                                                ;; when running clojure-ts-mode tests on windows.
-                                                                                "./test/cider-client-tests.el"
-                                                                                "./test/cider-eval-tests.el"))
+                                                            (`clojure-ts-mode `("./test/*/" "!./test/clojure-ts-mode"
+                                                                                ,@clojure-ts-failing-tests))
                                                             (`all             '("./test/*/" "!./test/integration")))
                                     "test/integration/projects"
                                     ;; This file is _supposed_ to be excluded
