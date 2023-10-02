@@ -154,6 +154,7 @@ nREPL connection."
              (relpath (thread-last
                         (cider-classpath-entries)
                         (seq-filter #'file-directory-p)
+                        (seq-map #'file-truename)
                         (seq-map (lambda (dir)
                                    (when (file-in-directory-p path dir)
                                      (file-relative-name path dir))))

@@ -14,8 +14,7 @@
 
 (defvar clojure-ts-failing-tests
   (when (member system-type '(ms-dos windows-nt cygwin))
-    '("./test/cider-client-tests.el"
-      "./test/cider-eval-tests.el"))
+    '("./test/cider-eval-tests.el"))
   "Tests that fail when running against clojure-ts-mode. These need to be fixed.
 See 'cider-expected-ns returns the namespace matching the given string path'
 and 'cider-provide-file can handle multibyte characters'
