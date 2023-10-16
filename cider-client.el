@@ -150,21 +150,26 @@ If PATH is nil, use the path to the file backing the current buffer.  The
 command falls back to `clojure-expected-ns' in the absence of an active
 nREPL connection."
   (if (cider-connected-p)
-      (let* ((path (file-truename (or path buffer-file-name)))
-             (relpath (thread-last
-                        (cider-classpath-entries)
-                        (seq-filter #'file-directory-p)
-                        ;; (seq-map #'file-truename)
-                        (seq-map (lambda (dir)
-                                   (when (file-in-directory-p path dir)
-                                     (file-relative-name path dir))))
-                        (seq-filter #'identity)
-                        (seq-sort (lambda (a b)
-                                    (< (length a) (length b))))
-                        (car))))
-        (if relpath
-            (cider-path-to-ns relpath)
-          (clojure-expected-ns path)))
+      (progn (message ":path %s :CCE %S :FDP %S"
+                   (file-truename (or path buffer-file-name))
+                   (cider-classpath-entries)
+                   (seq-filter #'file-directory-p (cider-classpath-entries))
+                   )
+          (let* ((path (file-truename (or path buffer-file-name)))
+                 (relpath (thread-last
+                            (cider-classpath-entries)
+                            (seq-filter #'file-directory-p)
+                            ;; (seq-map #'file-truename)
+                            (seq-map (lambda (dir)
+                                       (when (file-in-directory-p path dir)
+                                         (file-relative-name path dir))))
+                            (seq-filter #'identity)
+                            (seq-sort (lambda (a b)
+                                        (< (length a) (length b))))
+                            (car))))
+            (if relpath
+                (cider-path-to-ns relpath)
+              (clojure-expected-ns path))))
     (clojure-expected-ns path)))
 
 (defun cider-nrepl-op-supported-p (op &optional connection skip-ensure)
