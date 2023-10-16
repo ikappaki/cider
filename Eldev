@@ -10,11 +10,13 @@
 
 (eldev-add-loading-roots 'test "test/utils")
 (eldev-add-extra-dependencies 'runtime '(:package logview :optional t))
-(eldev-add-extra-dependencies 'runtime '(:package clojure-ts-mode :optional t))
+(eldev-add-extra-dependencies 'runtime '(:package clojure-ts-mode :optional nil))
 
 (defvar clojure-ts-failing-tests
   (when (member system-type '(ms-dos windows-nt cygwin))
-    '("./test/cider-eval-tests.el"))
+    nil
+ ;; '("./test/cider-eval-tests.el")
+ )
   "Tests that fail when running against clojure-ts-mode. These need to be fixed.
 See 'cider-expected-ns returns the namespace matching the given string path'
 and 'cider-provide-file can handle multibyte characters'

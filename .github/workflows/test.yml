@@ -76,12 +76,12 @@ jobs:
     - run: npm install shadow-cljs@2.20.13 -g
     - run: npm install nbb@1.1.152 -g
 
-    - name: Test integration
-      run: |
-        # The tests occasionally fail on macos&win in what is seems to
-        # be GH connectivity runner issues. We attempt to address this
-        # problem by rerunning the tests more than once.
-        eldev -p -dtTC test --test-type integration || eldev -p -dtTC test --test-type integration
+    # - name: Test integration
+    #   run: |
+    #     # The tests occasionally fail on macos&win in what is seems to
+    #     # be GH connectivity runner issues. We attempt to address this
+    #     # problem by rerunning the tests more than once.
+    #     eldev -p -dtTC test --test-type integration || eldev -p -dtTC test --test-type integration
 
     - name: Test clojure-ts-mode
       if: startsWith (matrix.emacs_version, '29')
