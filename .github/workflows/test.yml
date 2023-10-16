@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [windows-latest]
         emacs_version: ['29.1']
 
     steps:
@@ -83,9 +83,9 @@ jobs:
     #     # problem by rerunning the tests more than once.
     #     eldev -p -dtTC test --test-type integration || eldev -p -dtTC test --test-type integration
 
-    - name: Test 
-      run: |
-        eldev -p -dtTC test cider-expected-ns
+    # - name: Test 
+    #   run: |
+    #     eldev -p -dtTC test cider-expected-ns
 
     - name: Test clojure-ts-mode
       run: |

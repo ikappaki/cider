@@ -150,10 +150,14 @@ If PATH is nil, use the path to the file backing the current buffer.  The
 command falls back to `clojure-expected-ns' in the absence of an active
 nREPL connection."
   (if (cider-connected-p)
-      (progn (message ":path %s :CCE %S :FDP %S"
+      (progn (message ":path %s :CCE %S :FDP %S :SM %S"
                    (file-truename (or path buffer-file-name))
                    (cider-classpath-entries)
                    (seq-filter #'file-directory-p (cider-classpath-entries))
+                   (seq-map (lambda (dir)
+                              (when (file-in-directory-p path dir)
+                                (file-relative-name path dir)))
+                            (seq-filter #'file-directory-p (cider-classpath-entries)))
                    )
           (let* ((path (file-truename (or path buffer-file-name)))
                  (relpath (thread-last
