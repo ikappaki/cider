@@ -60,21 +60,21 @@ jobs:
         # shadow requires java 11
         java-version: 11
 
-    - name: Install Clojure Tools
-      # Use SHA until
-      # https://github.com/DeLaGuardo/setup-clojure/issues/78 is
-      # released
-      uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307
-      with:
-        bb: '1.0.165'
-        cli: '1.10.3.1013'
-        lein: '2.9.10'
+    # - name: Install Clojure Tools
+    #   # Use SHA until
+    #   # https://github.com/DeLaGuardo/setup-clojure/issues/78 is
+    #   # released
+    #   uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307
+    #   with:
+    #     bb: '1.0.165'
+    #     cli: '1.10.3.1013'
+    #     lein: '2.9.10'
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - run: npm install shadow-cljs@2.20.13 -g
-    - run: npm install nbb@1.1.152 -g
+    # - uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 16
+    # - run: npm install shadow-cljs@2.20.13 -g
+    # - run: npm install nbb@1.1.152 -g
 
     # - name: Test integration
     #   run: |
