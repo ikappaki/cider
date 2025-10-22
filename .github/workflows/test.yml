@@ -45,9 +45,9 @@ jobs:
       with:
         version: ${{matrix.emacs_version}}
 
-    - name: Install Eldev
-      if: "!startsWith (matrix.os, 'windows')"
-      run: curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev | sh
+    # - name: Install Eldev
+    #   if: "!startsWith (matrix.os, 'windows')"
+    #   run: curl -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev | sh
 
     - name: Install Eldev on MS-Windows
       if: startsWith (matrix.os, 'windows')
@@ -60,51 +60,51 @@ jobs:
 
         curl.exe -fsSL https://raw.github.com/doublep/eldev/master/webinstall/github-eldev.bat | cmd /Q
 
-    - name: Install deps.clj on MS-Windows
-      if: startsWith (matrix.os, 'windows')
-      run: |
-        iwr -Uri https://raw.githubusercontent.com/borkdude/deps.clj/master/install.ps1 -outfile install_clojure.ps1
-        .\install_clojure.ps1
-        get-command deps.exe | split-path -parent | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    # - name: Install deps.clj on MS-Windows
+    #   if: startsWith (matrix.os, 'windows')
+    #   run: |
+    #     iwr -Uri https://raw.githubusercontent.com/borkdude/deps.clj/master/install.ps1 -outfile install_clojure.ps1
+    #     .\install_clojure.ps1
+    #     get-command deps.exe | split-path -parent | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Check out the source code
       uses: actions/checkout@v2
 
-    - name: Prepare java
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        # shadow requires java 11
-        java-version: ${{matrix.java_version}}
+    # - name: Prepare java
+    #   uses: actions/setup-java@v3
+    #   with:
+    #     distribution: 'temurin'
+    #     # shadow requires java 11
+    #     java-version: ${{matrix.java_version}}
 
-    - name: Install Clojure Tools
-      # Use SHA until
-      # https://github.com/DeLaGuardo/setup-clojure/issues/78 is
-      # released
-      uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307
-      with:
-        bb: '1.0.165'
-        cli: '1.10.3.1013'
-        lein: '2.9.10'
+    # - name: Install Clojure Tools
+    #   # Use SHA until
+    #   # https://github.com/DeLaGuardo/setup-clojure/issues/78 is
+    #   # released
+    #   uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307
+    #   with:
+    #     bb: '1.0.165'
+    #     cli: '1.10.3.1013'
+    #     lein: '2.9.10'
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - run: npm install shadow-cljs@2.20.13 -g
-    - run: npm install nbb@1.1.152 -g
+    # - uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 16
+    # - run: npm install shadow-cljs@2.20.13 -g
+    # - run: npm install nbb@1.1.152 -g
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    - run: |
-        pip install basilisp==0.1.0b2
+    # - uses: actions/setup-python@v5
+    #   with:
+    #     python-version: '3.12'
+    # - run: |
+    #     pip install basilisp==0.1.0b2
 
     - name: Test integration
       run: |
         # The tests occasionally fail on macos&win in what is seems to
         # be GH connectivity runner issues. We attempt to address this
         # problem by rerunning the tests more than once.
-        eldev -p -dtTC test --test-type integration || eldev -p -dtTC test --test-type integration
+        eldev -p -dtTC test --test-type integration
 
     # - name: Test clojure-ts-mode
     #   if: startsWith (matrix.emacs_version, '30')
