@@ -18,11 +18,7 @@
 ;; Package-Requires: (
 ;;     (emacs "27")
 ;;     (clojure-mode "5.19")
-;;     (parseedn "1.2.1")
-;;     (spinner "1.7")
-;;     (seq "2.22")
-;;     (sesman "0.3.2")
-;;     (transient "0.4.1"))
+;;     (parseedn "1.2.1"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
