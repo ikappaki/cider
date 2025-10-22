@@ -105,7 +105,7 @@ jobs:
         # be GH connectivity runner issues. We attempt to address this
         # problem by rerunning the tests more than once.
         gpg --homedir ~/.emacs.d/elpa/gnupg --receive-keys 066DAFCB81E42C40 
-        eldev eval package-gnupghome-dir
+        eldev -p -dtTC eval package-gnupghome-dir
         # eldev -p -dtTC test --test-type integration
 
     # - name: Test clojure-ts-mode
