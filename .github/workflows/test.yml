@@ -107,7 +107,7 @@ jobs:
         emacs.exe --init-dir tmp1 --batch --eval '(url-copy-file "https://elpa.gnu.org/packages/archive-contents" "abc.txt" t)'
         ls abc.txt
         # curl https://elpa.gnu.org/packages/archive-contents
-        emacs.exe --init-dir tmp1 --batch --eval "(package-install 'queue)"
+        emacs.exe --init-dir tmp1 --batch --eval "(progn (setq package-check-signature nil) (package-install 'queue))"
         # gpg --homedir ~/.emacs.d/elpa/gnupg --receive-keys 066DAFCB81E42C40 
         # eldev -p -dtTC eval package-gnupghome-dir
         # eldev -p -dtTC test --test-type integration
