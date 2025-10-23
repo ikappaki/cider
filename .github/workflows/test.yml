@@ -123,6 +123,8 @@ jobs:
         # tree /f c:\emacs\share\emacs\30.2\etc
 
         dir c:\emacs\share\emacs\30.2\etc\package-keyring.gpg
+        echo ":0"
+        gpg --list-packets /c/emacs/share/emacs/30.2/etc/package-keyring.gpg
         echo ":1"
         gpg --keyring /c/emacs/share/emacs/30.2/etc/package-keyring.gpg --list-keys
         echo ":2"
