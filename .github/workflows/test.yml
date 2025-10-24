@@ -109,6 +109,7 @@ jobs:
         # be GH connectivity runner issues. We attempt to address this
         # problem by rerunning the tests more than once.
         # emacs.exe --init-dir tmp1 --batch --eval '(url-copy-file "https://elpa.gnu.org/packages/archive-contents" "abc.txt" t)'
+        echo $env:PATH
         (Get-Command gpg*)
         # ls abc.txt
         curl https://elpa.gnu.org/packages/archive-contents -o archive-contents
