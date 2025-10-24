@@ -70,6 +70,7 @@ jobs:
     - uses: MinoruSekine/setup-scoop@v4.0.2
       with:
         apps: gpg
+        scoop_update: false
 
     - name: Check out the source code
       uses: actions/checkout@v2
