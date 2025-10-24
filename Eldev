@@ -1,5 +1,7 @@
 ; -*- mode: emacs-lisp; lexical-binding: t -*-
 
+(progn (require 'package) (print package-gnupghome-dir))
+
 (eldev-require-version "1.8.2")
 
 (eldev-use-package-archive 'gnu)

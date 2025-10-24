@@ -67,9 +67,9 @@ jobs:
     #     .\install_clojure.ps1
     #     get-command deps.exe | split-path -parent | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    # - uses: MinoruSekine/setup-scoop@v4.0.2
-    #   with:
-    #     apps: gpg
+    - uses: MinoruSekine/setup-scoop@v4.0.2
+      with:
+        apps: gpg
 
     - name: Check out the source code
       uses: actions/checkout@v2
@@ -109,8 +109,7 @@ jobs:
         # be GH connectivity runner issues. We attempt to address this
         # problem by rerunning the tests more than once.
         # emacs.exe --init-dir tmp1 --batch --eval '(url-copy-file "https://elpa.gnu.org/packages/archive-contents" "abc.txt" t)'
-        choco install gnupg
-
+        (Get-Command gpg*)
         # ls abc.txt
         curl https://elpa.gnu.org/packages/archive-contents -o archive-contents
         curl https://elpa.gnu.org/packages/archive-contents.sig -o archive-contents.sig
